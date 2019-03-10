@@ -1,4 +1,4 @@
-package pkp
+package main
 
 import (
 	"bytes"
