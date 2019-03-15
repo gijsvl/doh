@@ -2,24 +2,26 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"io/ioutil"
 	"net"
 )
 
-func ProcessRequest(addr *net.UDPAddr, buf []byte, ServerConn *net.UDPConn) {
-	resolvedQuery := DNSOverHTTPSRequest(base64.StdEncoding.EncodeToString(buf))      //request DNS record over HTTPS
+func ProcessRequest(addr *net.UDPAddr, buf []byte, s *Server) {
+	resolvedQuery := DNSOverHTTPSRequest(base64.StdEncoding.EncodeToString(buf), s.config) //request DNS record over HTTPS
+	//TODO: Fallback to normal DNS query? e.g. in case of Captive Portal
 	if resolvedQuery != nil {
-		_, err := ServerConn.WriteToUDP(resolvedQuery, addr)
+		_, err := s.conn.WriteToUDP(resolvedQuery, addr)
 		CheckError(err)
 	}
 }
 
-func DNSOverHTTPSRequest(record string) []byte {
+func DNSOverHTTPSRequest(record string, config *Config) []byte {
 	//QUERY OVER HTTPS
-	//TODO: parameterize the https-endpoint
-	client := NewClient([]byte{61, 149, 205, 222, 84, 64, 203, 239, 45, 4, 169, 54, 59, 30, 133, 238, 50, 37, 159, 58, 246, 99, 57, 176, 169, 205, 201, 159, 39, 215, 160, 44})
-	res, err := client.Get("https://1.1.1.1/dns-query?dns=" + record)
-	CheckError(err)
+	bytes, _ := hex.DecodeString(config.ChosenEndpoint.Fingerprint)
+	client := NewClient(bytes)
+	res, err := client.Get(config.ChosenEndpoint.Url + record)
+	CheckError(err) //TODO: no shut down but graceful error handling
 	body, err := ioutil.ReadAll(res.Body)
 	CheckError(err)
 

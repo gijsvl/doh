@@ -1,0 +1,16 @@
+{
+  "endpoints": [
+    {
+      "name": "Cloudflare 1",
+      "IP": "1.1.1.1",
+      "url": "https://1.1.1.1/dns-query?dns=",
+      "fingerprint": "3d95cdde5440cbef2d04a9363b1e85ee32259f3af66339b0a9cdc99f27d7a02c"
+    },
+    {
+      "name": "Cloudflare 2",
+      "IP": "1.0.0.1",
+      "url": "https://1.0.0.1/dns-query?dns=",
+      "fingerprint": "3d95cdde5440cbef2d04a9363b1e85ee32259f3af66339b0a9cdc99f27d7a02c"
+    }
+  ]
+}

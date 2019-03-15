@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"io"
 	"log"
 	"net"
@@ -50,7 +51,7 @@ func (c Client) makeDialer(fingerprint []byte, skipCAVerification bool) Dialer {
 			}
 		}
 		if keyPinValid == false {
-			println("invalid pin")
+			return conn, errors.New("invalid pinned key")
 		}
 		return conn, nil
 	}
