@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"github.com/getlantern/systray"
-	"github.com/getlantern/systray/example/icon"
 	"io/ioutil"
 	"net"
 )
@@ -34,6 +33,9 @@ func Listener(s *Server) { //listen to incoming packets
 	Notification("display notification \"Successfully started!\" with title \"DoH\"") //display a notification when successful
 	buf := make([]byte, 1024)
 	for { //infinite loop
+	//TODO: some calls fail... QUIC Protocol, maybe? google.com
+	// https://tools.ietf.org/id/draft-huitema-quic-dnsoquic-03.html
+	// https://datatracker.ietf.org/meeting/99/materials/slides-99-dprive-dns-over-quic-01
 		n, addr, err := s.conn.ReadFromUDP(buf)
 		CheckError(err)
 		go ProcessRequest(addr, buf[0:n], s) //process request async
@@ -41,6 +43,7 @@ func Listener(s *Server) { //listen to incoming packets
 }
 
 func getConfig() *Config {
+	//TODO: Protect config file, check hash?
 	var config Config
 	configBytes, err := ioutil.ReadFile("config.json")
 	CheckError(err)
@@ -63,7 +66,6 @@ func onReady() {
 	s := createServer()  //create server
 	defer s.conn.Close() //close server if program exits
 
-	systray.SetIcon(icon.Data)
 	systray.SetTitle("DoH")
 	systray.SetTooltip("DNS over HTTPS")
 	for i, endpoint := range s.config.Endpoints {
