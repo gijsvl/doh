@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"runtime"
 )
@@ -16,7 +17,7 @@ func CheckError(err error) {
 		} else if runtime.GOOS == "windows" {
 			//TODO add windows gui error
 		}
-		//os.Exit(0)
+		os.Exit(0)
 	}
 }
 

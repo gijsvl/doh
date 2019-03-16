@@ -21,7 +21,10 @@ func DNSOverHTTPSRequest(record string, config *Config) []byte {
 	bytes, _ := hex.DecodeString(config.ChosenEndpoint.Fingerprint)
 	client := NewClient(bytes)
 	res, err := client.Get(config.ChosenEndpoint.Url + record)
-	CheckError(err) //TODO: no shut down but graceful error handling
+	if err != nil {
+		//TODO: fallback to other endpoint?
+		return nil
+	}
 	body, err := ioutil.ReadAll(res.Body)
 	CheckError(err)
 
