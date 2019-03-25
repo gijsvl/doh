@@ -17,7 +17,7 @@ type Endpoint struct {
 
 type Config struct {
 	Endpoints      []*Endpoint `json:"endpoints"`
-	ChosenEndpoint *Endpoint    `json:"-"`
+	ChosenEndpoint *Endpoint   `json:"-"`
 }
 
 type Server struct {
@@ -33,9 +33,9 @@ func Listener(s *Server) { //listen to incoming packets
 	Notification("display notification \"Successfully started!\" with title \"DoH\"") //display a notification when successful
 	buf := make([]byte, 1024)
 	for { //infinite loop
-	//TODO: some calls fail... QUIC Protocol, maybe? google.com
-	// https://tools.ietf.org/id/draft-huitema-quic-dnsoquic-03.html
-	// https://datatracker.ietf.org/meeting/99/materials/slides-99-dprive-dns-over-quic-01
+		//TODO: some calls fail... QUIC Protocol, maybe? google.com
+		// https://tools.ietf.org/id/draft-huitema-quic-dnsoquic-03.html
+		// https://datatracker.ietf.org/meeting/99/materials/slides-99-dprive-dns-over-quic-01
 		n, addr, err := s.conn.ReadFromUDP(buf)
 		CheckError(err)
 		go ProcessRequest(addr, buf[0:n], s) //process request async

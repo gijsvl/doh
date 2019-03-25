@@ -1,19 +1,19 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/hex"
 	"io/ioutil"
 	"net"
 )
 
 func ProcessRequest(addr *net.UDPAddr, buf []byte, s *Server) {
-	resolvedQuery := DNSOverHTTPSRequest(base64.StdEncoding.EncodeToString(buf), s.config) //request DNS record over HTTPS
-	//TODO: Fallback to normal DNS query? e.g. in case of Captive Portal
-	if resolvedQuery != nil {
-		_, err := s.conn.WriteToUDP(resolvedQuery, addr)
-		CheckError(err)
-	}
+	resolveNormal(s, addr, buf)
+	//resolvedQuery := DNSOverHTTPSRequest(base64.StdEncoding.EncodeToString(buf), s.config) //request DNS record over HTTPS
+	////TODO: Fallback to normal DNS query? e.g. in case of Captive Portal
+	//if resolvedQuery != nil {
+	//	_, err := s.conn.WriteToUDP(resolvedQuery, addr)
+	//	CheckError(err)
+	//}
 }
 
 func DNSOverHTTPSRequest(record string, config *Config) []byte {
@@ -29,4 +29,22 @@ func DNSOverHTTPSRequest(record string, config *Config) []byte {
 	CheckError(err)
 
 	return body
+}
+
+func resolveNormal(s *Server, addr *net.UDPAddr, buf []byte) {
+	b := make([]byte, 1024)
+	udpAddr, err := net.ResolveUDPAddr("udp", "1.1.1.1:53")
+	CheckError(err)
+	outgoing, err := net.DialUDP("udp", nil, udpAddr)
+	CheckError(err)
+	go func(addr *net.UDPAddr) {
+		for {
+			n1, _, e := outgoing.ReadFromUDP(b)
+			CheckError(e)
+			_, e = s.conn.WriteToUDP(b[0:n1], addr)
+			CheckError(e)
+		}
+	}(addr)
+	_, e := outgoing.Write(buf)
+	CheckError(e)
 }
