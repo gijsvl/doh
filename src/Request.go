@@ -1,19 +1,20 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/hex"
 	"io/ioutil"
 	"net"
 )
 
 func ProcessRequest(addr *net.UDPAddr, buf []byte, s *Server) {
-	resolveNormal(s, addr, buf)
-	//resolvedQuery := DNSOverHTTPSRequest(base64.StdEncoding.EncodeToString(buf), s.config) //request DNS record over HTTPS
-	////TODO: Fallback to normal DNS query? e.g. in case of Captive Portal
-	//if resolvedQuery != nil {
-	//	_, err := s.conn.WriteToUDP(resolvedQuery, addr)
-	//	CheckError(err)
-	//}
+	resolvedQuery := DNSOverHTTPSRequest(base64.StdEncoding.EncodeToString(buf), s.config) //request DNS record over HTTPS
+	if resolvedQuery != nil {
+		_, err := s.conn.WriteToUDP(resolvedQuery, addr)
+		CheckError(err)
+	} else {
+		resolveNormal(s, addr, buf)
+	}
 }
 
 func DNSOverHTTPSRequest(record string, config *Config) []byte {
