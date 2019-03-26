@@ -26,6 +26,7 @@ type Server struct {
 }
 
 func main() {
+	//TODO: register as a service such that it starts on OS login
 	systray.Run(onReady, onExit)
 }
 
@@ -33,9 +34,7 @@ func Listener(s *Server) { //listen to incoming packets
 	Notification("display notification \"Successfully started!\" with title \"DoH\"") //display a notification when successful
 	buf := make([]byte, 1024)
 	for { //infinite loop
-		//TODO: some calls fail... QUIC Protocol, maybe? google.com
-		// https://tools.ietf.org/id/draft-huitema-quic-dnsoquic-03.html
-		// https://datatracker.ietf.org/meeting/99/materials/slides-99-dprive-dns-over-quic-01
+		//TODO: check DNS settings of device from time to time to verify if it still points to 127.0.0.1
 		n, addr, err := s.conn.ReadFromUDP(buf)
 		CheckError(err)
 		go ProcessRequest(addr, buf[0:n], s) //process request async
