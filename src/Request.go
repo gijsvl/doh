@@ -13,6 +13,7 @@ func ProcessRequest(addr *net.UDPAddr, buf []byte, s *Server) {
 		_, err := s.conn.WriteToUDP(resolvedQuery, addr)
 		CheckError(err)
 	} else {
+		Notification("Fallback to normal DNS, because something went wrong with DoH. You lost privacy!")
 		resolveNormal(s, addr, buf)
 	}
 }
@@ -23,8 +24,17 @@ func DNSOverHTTPSRequest(record string, config *Config) []byte {
 	client := NewClient(bytes)
 	res, err := client.Get(config.ChosenEndpoint.Url + record)
 	if err != nil {
-		//TODO: fallback to other endpoint?
-		return nil
+		for _, endpoint := range config.Endpoints {
+			res, err = client.Get(endpoint.Url + record)
+			if err != nil {
+				continue
+			} else {
+				Notification("Fallback to other endpoint: " + endpoint.Name)
+			}
+		}
+		if err != nil {
+			return nil
+		}
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	CheckError(err)
