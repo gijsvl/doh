@@ -5,6 +5,7 @@ import (
 	"github.com/getlantern/systray"
 	"io/ioutil"
 	"net"
+	"os"
 )
 
 type Endpoint struct {
@@ -36,7 +37,9 @@ func Listener(s *Server) { //listen to incoming packets
 	for { //infinite loop
 		//TODO: check DNS settings of device from time to time to verify if it still points to 127.0.0.1
 		n, addr, err := s.conn.ReadFromUDP(buf)
-		CheckError(err)
+		if !CheckError(err) {
+			continue
+		}
 		go ProcessRequest(addr, buf[0:n], s) //process request async
 	}
 }
@@ -45,17 +48,25 @@ func getConfig() *Config {
 	//TODO: Protect config file, check hash?
 	var config Config
 	configBytes, err := ioutil.ReadFile("config.json")
-	CheckError(err)
+	if !CheckError(err) {
+		os.Exit(1)
+	}
 	err = json.Unmarshal(configBytes, &config)
-	CheckError(err)
+	if !CheckError(err) {
+		os.Exit(1)
+	}
 	return &config
 }
 
 func createServer() Server { //create server
 	serverAddress, err := net.ResolveUDPAddr("udp", ":53") //create address object for server to bind to
-	CheckError(err)
+	if !CheckError(err) {
+		os.Exit(1)
+	}
 	conn, err := net.ListenUDP("udp", serverAddress)
-	CheckError(err)
+	if !CheckError(err) {
+		os.Exit(1)
+	}
 
 	return Server{conn, getConfig()}
 }

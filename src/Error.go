@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"runtime"
 )
 
 /* A Simple function to verify error */
-func CheckError(err error) {
+func CheckError(err error) bool {
 	if err != nil {
 		fmt.Println("Error: ", err)
 		//GUI
@@ -17,7 +16,7 @@ func CheckError(err error) {
 		} else if runtime.GOOS == "windows" {
 			//TODO add windows gui error
 		}
-		os.Exit(0)
 	}
+	return err == nil
 }
 
