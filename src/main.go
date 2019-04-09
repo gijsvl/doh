@@ -46,6 +46,7 @@ func Listener(s *Server) { //listen to incoming packets
 
 func getConfig() *Config {
 	//TODO: Protect config file, check hash?
+	//TODO: add Google (8.8.8.8,8.8.4.4), Quad9 filtered: (9.9.9.9, 149.112.112.112), Quad9 (9.9.9.10, 149.112.112.10)
 	var config Config
 	configBytes, err := ioutil.ReadFile("config.json")
 	if !CheckError(err) {
