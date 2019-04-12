@@ -27,7 +27,7 @@ with open('domains.txt') as fp:
             "ipconfig getpacket $(networksetup -listallhardwareports "
             "| awk '/Hardware Port: Wi-Fi/{getline; print $2}') "
             "| grep domain_name_server "
-            "| sed -n 's/.*{\\(.*\\)}.*/\\1/p'").read()
+            "| sed -n 's/.*{\\([0-9]\\{1,3\\}\\.[0-9]\\{1,3\\}\\.[0-9]\\{1,3\\}\\.[0-9]\\{1,3\\}\\).*/\\1/p'").read()
         call_and_measure(line, ip)  # Make sure to add to cache
         time3 = call_and_measure(line, ip)
         defaultResolving.append(time3)
