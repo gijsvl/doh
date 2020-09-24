@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"strconv"
 )
 
 type Endpoint struct {
@@ -19,15 +20,18 @@ type Endpoint struct {
 type Config struct {
 	Endpoints      []*Endpoint `json:"endpoints"`
 	ChosenEndpoint *Endpoint   `json:"-"`
+	Counter        int         `json:"counter"`
 }
 
 type Server struct {
 	conn   *net.UDPConn
 	config *Config
+	MCount *systray.MenuItem
 }
 
 func main() {
 	//TODO: register as a service such that it starts on OS login
+	CheckPermissions()   //Checking permissions of runtime, upgrades if necessary
 	systray.Run(onReady, onExit)
 }
 
@@ -40,6 +44,10 @@ func Listener(s *Server) { //listen to incoming packets
 		if !CheckError(err) {
 			continue
 		}
+		s.config.Counter += 1
+		s.MCount.Hide()
+		s.MCount = systray.AddMenuItem("Number of calls: "+strconv.Itoa(s.config.Counter), "Number of calls: "+strconv.Itoa(s.config.Counter))
+		s.MCount.Disable()
 		go ProcessRequest(addr, buf[0:n], s) //process request async
 	}
 }
@@ -56,6 +64,7 @@ func getConfig() *Config {
 	if !CheckError(err) {
 		os.Exit(1)
 	}
+	config.Counter = 0
 	return &config
 }
 
@@ -69,11 +78,10 @@ func createServer() Server { //create server
 		os.Exit(1)
 	}
 
-	return Server{conn, getConfig()}
+	return Server{conn, getConfig(), nil}
 }
 
 func onReady() {
-	CheckPermissions()   //Checking permissions of runtime, upgrades if necessary
 	s := createServer()  //create server
 	defer s.conn.Close() //close server if program exits
 
@@ -96,6 +104,8 @@ func onReady() {
 		}
 	}
 
+	s.MCount = systray.AddMenuItem("Number of calls: "+strconv.Itoa(s.config.Counter), "Number of calls: "+strconv.Itoa(s.config.Counter))
+	s.MCount.Disable()
 	mQuit := systray.AddMenuItem("Quit", "Quit")
 	go func() {
 		<-mQuit.ClickedCh
